@@ -77,8 +77,7 @@ def send_telegram(message):
     for chunk in chunks:
         response = requests.post(url, json={
             "chat_id": TELEGRAM_CHAT_ID,
-            "text": chunk,
-            "parse_mode": "Markdown",
+            "text": chunk,     
         })
         if not response.ok:
             print(f"Telegram fejl: {response.text}")
