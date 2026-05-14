@@ -1,0 +1,30 @@
+name: Morgen Nyheder Bot
+
+on:
+  schedule:
+    # Kører kl. 06:00 dansk tid (UTC+2 om sommeren = 04:00 UTC)
+    - cron: '0 4 * * *'
+  workflow_dispatch: # Gør det muligt at køre manuelt fra GitHub
+
+jobs:
+  send-news:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout kode
+        uses: actions/checkout@v4
+
+      - name: Opsæt Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Installer afhængigheder
+        run: pip install feedparser anthropic requests
+
+      - name: Kør nyhedsbot
+        env:
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: python news_bot.py
