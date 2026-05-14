@@ -67,7 +67,18 @@ def summarize_with_groq(category, articles):
         return "Ingen artikler fundet."
 
     articles_text = "\n".join(articles)
-    prompt = f"""Du er en nyhedsredaktør der laver en kort morgenoversigt på dansk.
+
+    if category == "🇩🇰 Danske nyheder":
+        prompt = f"""Du er en nyhedsredaktør der laver en kort morgenoversigt på dansk.
+
+Her er artikler fra danske medier:
+{articles_text}
+
+Udvælg og opsummer KUN de 4-5 historier der handler om Danmark, danske forhold, dansk politik, dansk økonomi eller danskere.
+Ignorer artikler der primært handler om internationale forhold, udenlandske lande eller verdensbegivenheder uden dansk vinkel.
+Vær konkret og informativ. Brug emoji sparsomt. Maks 400 ord."""
+    else:
+        prompt = f"""Du er en nyhedsredaktør der laver en kort morgenoversigt på dansk.
 
 Her er dagens {category} nyheder:
 {articles_text}
@@ -97,7 +108,7 @@ def send_telegram(message):
 
 def main():
     today = datetime.now().strftime("%A d. %d. %B %Y")
-    full_message = f"☀️ Godmorgen! Her er nyhederne {today}\n\n"
+    full_message = f"Godmorgen! Her er nyhederne {today}\n\n"
 
     for category, feed_urls in FEEDS.items():
         print(f"Henter {category}...")
