@@ -3,15 +3,14 @@ import feedparser
 import requests
 import re
 from datetime import datetime
-import google.generativeai as genai
+from google import genai
 
 # --- Konfiguration ---
 TELEGRAM_TOKEN = os.environ["TELEGRAM_TOKEN"]
 TELEGRAM_CHAT_ID = os.environ["TELEGRAM_CHAT_ID"]
 GEMINI_API_KEY = os.environ["GEMINI_API_KEY"]
 
-genai.configure(api_key=GEMINI_API_KEY)
-model = genai.GenerativeModel("gemini-2.0-flash")
+client = genai.Client(api_key=GEMINI_API_KEY)
 
 # --- RSS Feeds ---
 FEEDS = {
@@ -35,8 +34,7 @@ FEEDS = {
 MAX_ARTICLES_PER_CATEGORY = 8
 
 
-def fetch_articles(feed_urls: list[str]) -> list[str]:
-    """Henter artikler fra RSS feeds og returnerer titler + beskrivelser."""
+def fetch_articles(feed_urls):
     articles = []
     for url in feed_urls:
         try:
@@ -52,13 +50,11 @@ def fetch_articles(feed_urls: list[str]) -> list[str]:
     return articles[:MAX_ARTICLES_PER_CATEGORY]
 
 
-def summarize_with_gemini(category: str, articles: list[str]) -> str:
-    """Sender artikler til Gemini og får en dansk opsummering tilbage."""
+def summarize_with_gemini(category, articles):
     if not articles:
         return "Ingen artikler fundet."
 
     articles_text = "\n".join(articles)
-
     prompt = f"""Du er en nyhedsredaktør der laver en kort morgenoversigt på dansk.
 
 Her er dagens {category} nyheder:
@@ -67,12 +63,14 @@ Her er dagens {category} nyheder:
 Opsummer de 4-5 vigtigste historier i korte, præcise punkter på dansk.
 Vær konkret og informativ. Brug emoji sparsomt. Maks 400 ord."""
 
-    response = model.generate_content(prompt)
+    response = client.models.generate_content(
+        model="gemini-2.0-flash",
+        contents=prompt,
+    )
     return response.text
 
 
-def send_telegram(message: str) -> None:
-    """Sender besked til Telegram."""
+def send_telegram(message):
     url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
     chunks = [message[i:i+4000] for i in range(0, len(message), 4000)]
     for chunk in chunks:
@@ -87,20 +85,20 @@ def send_telegram(message: str) -> None:
 
 def main():
     today = datetime.now().strftime("%A d. %d. %B %Y")
-    full_message = f"☀️ *Godmorgen! Her er nyhederne {today}*\n\n"
+    full_message = f"*Godmorgen! Her er nyhederne {today}*\n\n"
 
     for category, feed_urls in FEEDS.items():
         print(f"Henter {category}...")
         articles = fetch_articles(feed_urls)
         summary = summarize_with_gemini(category, articles)
         full_message += f"*{category}*\n{summary}\n\n"
-        full_message += "─────────────────\n\n"
+        full_message += "---\n\n"
 
-    full_message += "_Hav en god dag! 🗞️_"
+    full_message += "_Hav en god dag!_"
 
     print("Sender til Telegram...")
     send_telegram(full_message)
-    print("Færdig!")
+    print("Faerdig!")
 
 
 if __name__ == "__main__":
