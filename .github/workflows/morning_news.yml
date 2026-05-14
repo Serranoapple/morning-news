@@ -19,7 +19,7 @@ jobs:
           python-version: '3.11'
 
       - name: Installer afhaengigheder
-        run: pip install feedparser google-generativeai requests
+        run: pip install feedparser google-genai requests
 
       - name: Koer nyhedsbot
         env:
