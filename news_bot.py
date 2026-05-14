@@ -18,11 +18,23 @@ FEEDS = {
         "https://www.dr.dk/nyheder/service/feeds/allenyheder",
         "https://feeds.tv2.dk/news/rss",
         "https://politiken.dk/rss/",
+        "https://www.berlingske.dk/rss",
+        "https://www.jyllands-posten.dk/rss/",
     ],
     "🌍 Internationale nyheder": [
         "https://feeds.bbci.co.uk/news/world/rss.xml",
         "https://rss.nytimes.com/services/xml/rss/nyt/World.xml",
         "https://www.theguardian.com/world/rss",
+    ],
+    "💻 Tech": [
+        "https://feeds.arstechnica.com/arstechnica/index",
+        "https://www.theverge.com/rss/index.xml",
+        "https://techcrunch.com/feed/",
+    ],
+    "📈 Finans": [
+        "https://feeds.bloomberg.com/markets/news.rss",
+        "https://www.ft.com/rss/home",
+        "https://rss.nytimes.com/services/xml/rss/nyt/Business.xml",
     ],
     "⚽ Sport": [
         "https://www.dr.dk/sporten/service/feeds/allesportsnyhedsartikler",
@@ -77,7 +89,7 @@ def send_telegram(message):
     for chunk in chunks:
         response = requests.post(url, json={
             "chat_id": TELEGRAM_CHAT_ID,
-            "text": chunk,     
+            "text": chunk,
         })
         if not response.ok:
             print(f"Telegram fejl: {response.text}")
@@ -85,16 +97,16 @@ def send_telegram(message):
 
 def main():
     today = datetime.now().strftime("%A d. %d. %B %Y")
-    full_message = f"*Godmorgen! Her er nyhederne {today}*\n\n"
+    full_message = f"☀️ Godmorgen! Her er nyhederne {today}\n\n"
 
     for category, feed_urls in FEEDS.items():
         print(f"Henter {category}...")
         articles = fetch_articles(feed_urls)
         summary = summarize_with_groq(category, articles)
-        full_message += f"*{category}*\n{summary}\n\n"
+        full_message += f"{category}\n{summary}\n\n"
         full_message += "---\n\n"
 
-    full_message += "_Hav en god dag!_"
+    full_message += "Hav en god dag!"
 
     print("Sender til Telegram...")
     send_telegram(full_message)
