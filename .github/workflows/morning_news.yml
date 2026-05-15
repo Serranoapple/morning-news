@@ -2,6 +2,7 @@ name: Morgen Nyheder Bot
 
 on:
   schedule:
+    - cron: '23 9 * * *'
     - cron: '0 4 * * *'
   workflow_dispatch:
 
